@@ -3,53 +3,68 @@ import { ITask } from "@/types/tasks"; // Import ITask từ types
 import Task from "./Task"; // Import component Task để hiển thị
 import { useEffect, useState } from "react";
 import AddTack from "./AddTask"; // Import AddTask component
+import Swal from "sweetalert2";
 
 const TodoLish = () => {
     const { data: tasks = [], isLoading, isError, error, refetch } = useGetTasksQuery(undefined);
     const [deleteTask, { isLoading: isDeleting, isSuccess: isDeleteSuccess, isError: isDeleteError }] = useDeleteTaskMutation(); // Hook để xóa task
     const [updateTaskText, { isLoading: isUpdating, isSuccess: isUpdateSuccess, isError: isUpdateError }] = useUpdateTaskTextMutation(); // Hook để update task
 
-    const [editingTask, setEditingTask] = useState<ITask | null>(null); // State để lưu task đang được chỉnh sửa
-    const [newText, setNewText] = useState<string>(""); // State để lưu text mới khi chỉnh sửa
+    const [editingTask, setEditingTask] = useState<ITask | null>(null);
 
     const handleRemoveTask = async (id: string) => {
-        try {
-            await deleteTask(id).unwrap();
-        } catch (err) {
-            console.error('Failed to delete task:', err);
-        }
-    };
+        const result = await Swal.fire({
+            title: 'Bạn có chắc chắn muốn sửa task này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Có',
+            cancelButtonText: 'Không',
+        });
 
-    const handleUpdateTask = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (editingTask && newText.trim()) {
-            console.log("halllo");
-
+        if (result.isConfirmed) {
             try {
-                // Gọi API để update task
-                await updateTaskText({ id: editingTask.id, text: newText }).unwrap();
-                setEditingTask(null);
+                await deleteTask(id).unwrap();
+                Swal.fire('Thành công!', 'xoá task thành công.', 'success');
             } catch (err) {
-                console.error('Failed to update task:', err);
+                console.error('Failed to delete task:', err);
+                Swal.fire('Thất bại!', 'xoá task không thành công.', 'error');
             }
         }
     };
 
+    const handleUpdateTask = async (id: string, text: string) => {
+        const result = await Swal.fire({
+            title: 'Bạn có chắc chắn muốn sửa task này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Có',
+            cancelButtonText: 'Không',
+        });
+
+        if (result.isConfirmed) {
+            console.log("Updating task:", { id, text });
+            try {
+                await updateTaskText({ id, text }).unwrap();
+                setEditingTask(null); // Đặt lại task đang chỉnh sửa
+                Swal.fire('Thành công!', 'Sửa thông tin thành công.', 'success');
+            } catch (err) {
+                console.error('Error updating task:', err);
+                Swal.fire('Thất bại!', 'Sửa thông tin không thành công.', 'error');
+            }
+        }
+    };
+
+
+
     // useEffect theo dõi sự thay đổi khi xóa task thành công
     useEffect(() => {
-        if (isDeleteSuccess) {
-            console.log("Task deleted successfully");
+        if (isDeleteSuccess || isUpdateSuccess) {
+            console.log("Task successfully");
             refetch();
+        } else {
+            console.error("Failed to api");
         }
     }, [isDeleteSuccess, isUpdateSuccess, refetch]);
-
-    // useEffect theo dõi khi có lỗi trong quá trình xóa task
-    useEffect(() => {
-        if (isDeleteError) {
-            console.error("Failed to delete task");
-        }
-    }, [isDeleteError, isUpdateSuccess]);
 
     if (isLoading) return <div>Loading tasks...</div>;
     if (isError) return <div>Error loading tasks</div>;
@@ -60,33 +75,6 @@ const TodoLish = () => {
                 <h1 className="text-2xl font-bold">TODO LISH APP</h1>
                 <AddTack refetch={refetch} />
             </div>
-
-            {/* Modal edit task */}
-            {editingTask && (
-                <div className="modal modal-open">
-                    <div className="modal-box">
-                        <h2 className="font-bold text-lg">Edit Task</h2>
-                        <form onSubmit={handleUpdateTask}>
-                            <input
-                                type="text"
-                                value={newText}
-                                onChange={(e) => setNewText(e.target.value)}
-                                className="input input-bordered w-full"
-                                placeholder="Edit task text"
-                            />
-                            <div className="modal-action">
-                                <button className="btn" type="submit">
-                                    Update Task
-                                </button>
-                                <button className="btn" type="button">
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
             <div className="overflow-x-auto">
                 <table className="table w-full">
                     <thead>
@@ -103,10 +91,7 @@ const TodoLish = () => {
                                     key={task.id}
                                     task={task}
                                     onRemove={() => handleRemoveTask(task.id)}
-                                    onEdit={() => {
-                                        setEditingTask(task);
-                                        setNewText(task.text);
-                                    }}
+                                    onEdit={(id: string, text: string) => handleUpdateTask(id, text)}
                                 />
                             ))
                         ) : (

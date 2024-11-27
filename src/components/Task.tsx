@@ -2,27 +2,28 @@ import { ITask } from "@/types/tasks";
 import { FormEventHandler, useState } from "react";
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import Modal from "./Modal";
-import { useDispatch } from "react-redux"; // Import useDispatch từ Redux
-import { removeTask, updateTaskText } from "@/store/slices/taskSlice"; // Import các action
+import Swal from "sweetalert2";
 
 interface TaskProps {
     task: ITask; // Prop kiểu ITask
-    onRemove: (id: string) => void; // Thêm prop onRemove
-    onEdit: (task: ITask) => void;
+    onRemove: (id: string) => void;
+    onEdit: (id: string, text: string) => void;
 }
 
 const Task: React.FC<TaskProps> = ({ task, onRemove, onEdit }) => {
     const [openModalEdit, setOpenModalEdit] = useState<boolean>(false);
     const [taskToEdit, setTaskToEdit] = useState<string>(task.text);
-    const dispatch = useDispatch(); // Khởi tạo useDispatch để gọi các action
+
+    console.log(taskToEdit);
+
 
     // Hàm xử lý khi chỉnh sửa task
-    const handleEditNewTodo: FormEventHandler<HTMLFormElement> = (e) => {
+    const handleEditNewTodo = (e: React.FormEvent) => {
         e.preventDefault();
-        // Gửi action để cập nhật task trong Redux store
-        dispatch(updateTaskText({ id: task.id, text: taskToEdit }));
-        setOpenModalEdit(false); // Đóng modal sau khi chỉnh sửa
+        onEdit(task.id, taskToEdit);
+        setOpenModalEdit(false);
     };
+
 
     // Hàm xử lý xóa task
     const handleDeleteTask = () => {
@@ -31,8 +32,8 @@ const Task: React.FC<TaskProps> = ({ task, onRemove, onEdit }) => {
 
     return (
         <tr>
-            <th>{task.id}</th> {/* Hiển thị ID task */}
-            <td className="w-full">{task.text}</td> {/* Hiển thị nội dung task */}
+            <th>{task.id}</th>
+            <td className="w-full">{task.text}</td>
             <td className="flex gap-5">
                 {/* Nút chỉnh sửa */}
                 <FiEdit
@@ -43,7 +44,7 @@ const Task: React.FC<TaskProps> = ({ task, onRemove, onEdit }) => {
                 />
                 {/* Modal chỉnh sửa task */}
                 <Modal modalOpen={openModalEdit} setModalOpen={setOpenModalEdit}>
-                    <form onSubmit={handleEditNewTodo}>
+                    <form>
                         <h3 className='font-bold text-lg'>Edit Task</h3>
                         <div className='modal-action'>
                             <input
@@ -53,11 +54,10 @@ const Task: React.FC<TaskProps> = ({ task, onRemove, onEdit }) => {
                                 placeholder="Edit task text"
                                 className="input input-bordered w-full"
                             />
-                            <button className='btn' type='submit'>Submit</button>
+                            <button onClick={(e) => { handleEditNewTodo(e) }} className='btn' type='button'>Submit</button>
                         </div>
                     </form>
                 </Modal>
-
                 {/* Nút xóa task */}
                 <FiTrash2
                     cursor="pointer"
