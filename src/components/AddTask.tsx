@@ -1,48 +1,79 @@
+"use client";
 
-import { AiOutlinePlus } from 'react-icons/ai'
+import { AiOutlinePlus } from 'react-icons/ai';
 import Modal from './Modal';
 import { FormEventHandler, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addTask } from '@/store/slices/taskSlice';
+import { useAddTaskMutation } from '@/store/apiSlice';
+import { ITask } from '@/types/tasks';
 
-const AddTack = () => {
+interface AddTackProps {
+    refetch: () => void; // Nhận refetch từ component cha
+}
+
+const AddTack = ({ refetch }: AddTackProps) => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [taskValues, setTaskValues] = useState<string>('');
-    const dispatch = useDispatch();
+    const [addTask, { isLoading, isError, isSuccess }] = useAddTaskMutation();
 
-    const handleSubmitNewTodo: FormEventHandler<HTMLFormElement> = (e) => {
+    const handleSubmitNewTodo: FormEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
         if (taskValues.trim()) {
-            dispatch(addTask({ id: Date.now().toString(), text: taskValues }));
-            setTaskValues("");
-        }
+            try {
+                // Tạo task theo đúng cấu trúc ITask
+                const newTask: ITask = {
+                    id: Date.now().toString(),
+                    text: taskValues,
+                };
 
-    }
+                // Gửi task lên API
+                const result = await addTask(newTask).unwrap();
+
+                // Gọi lại refetch để làm mới danh sách task
+                refetch();
+
+                setTaskValues(''); // Reset input
+                setModalOpen(false); // Đóng modal
+            } catch (error) {
+                console.error('Failed to add task:', error);
+            }
+        }
+    };
 
     return (
         <>
             <div>
-                <button className="btn btn-primary w-full" onClick={() => setModalOpen(true)}>
-                    Add new task
-                    <AiOutlinePlus className='ml-2' size={18} />
+                <button
+                    className="btn btn-primary w-full"
+                    onClick={() => setModalOpen(true)}
+                    disabled={isLoading} // Disable khi đang thêm task
+                >
+                    {isLoading ? 'Adding...' : 'Add new task'}
+                    <AiOutlinePlus className="ml-2" size={18} />
                 </button>
 
                 <Modal modalOpen={modalOpen} setModalOpen={setModalOpen}>
                     <form onSubmit={handleSubmitNewTodo}>
-                        <h3 className='font-bold text-lg'>Add new task</h3>
-                        <div className='modal-action'>
+                        <h3 className="font-bold text-lg">Add new task</h3>
+                        <div className="modal-action">
                             <input
                                 value={taskValues}
-                                onChange={e => setTaskValues(e.target.value)}
+                                onChange={(e) => setTaskValues(e.target.value)}
                                 type="text"
                                 placeholder="Type here"
-                                className="input input-bordered w-full" />
-                            <button className='btn' type='submit'>Submit</button>
+                                className="input input-bordered w-full"
+                                disabled={isLoading} // Disable input khi đang xử lý
+                            />
+                            <button className="btn" type="submit" disabled={isLoading}>
+                                Submit
+                            </button>
                         </div>
                     </form>
+                    {isError && <p className="text-red-500 mt-2">Failed to add task!</p>}
+                    {isSuccess && <p className="text-green-500 mt-2">Task added successfully!</p>}
                 </Modal>
             </div>
         </>
     );
-}
+};
+
 export default AddTack;

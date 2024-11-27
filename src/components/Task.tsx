@@ -1,4 +1,3 @@
-
 import { ITask } from "@/types/tasks";
 import { FormEventHandler, useState } from "react";
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
@@ -9,9 +8,10 @@ import { removeTask, updateTaskText } from "@/store/slices/taskSlice"; // Import
 interface TaskProps {
     task: ITask; // Prop kiểu ITask
     onRemove: (id: string) => void; // Thêm prop onRemove
+    onEdit: (task: ITask) => void;
 }
 
-const Task: React.FC<TaskProps> = ({ task, onRemove }) => { // Thêm onRemove vào đây
+const Task: React.FC<TaskProps> = ({ task, onRemove, onEdit }) => {
     const [openModalEdit, setOpenModalEdit] = useState<boolean>(false);
     const [taskToEdit, setTaskToEdit] = useState<string>(task.text);
     const dispatch = useDispatch(); // Khởi tạo useDispatch để gọi các action
@@ -26,7 +26,7 @@ const Task: React.FC<TaskProps> = ({ task, onRemove }) => { // Thêm onRemove v�
 
     // Hàm xử lý xóa task
     const handleDeleteTask = () => {
-        onRemove(task.id); // Gọi hàm onRemove từ prop để xóa task
+        onRemove(task.id.toString());
     };
 
     return (
