@@ -19,6 +19,8 @@ npm install jsonwebtoken
 npm install --save-dev @types/jsonwebtoken@^9.0.7
 # sweetalert2
 npm install sweetalert2
+# on Server json
+json-server --watch db.json --port 5000
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
