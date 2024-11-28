@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const apiSlice = createApi({
     reducerPath: "api", // Định danh reducer trong store
-    baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/" }), // Địa chỉ backend cục bộ
+    baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/" }),
     endpoints: (builder) => ({
         // Lấy danh sách các task
         getTasks: builder.query<ITask[], void>({

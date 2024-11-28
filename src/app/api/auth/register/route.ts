@@ -27,8 +27,8 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: "Email already exists!" }, { status: 409 });
     }
 
-    const newId = Date.now().toString();
-    const newUser = { newId, name, email, password };
+    const id = Date.now().toString();
+    const newUser = { id, name, email, password };
     users.push(newUser);
     dbData.users = users;
     writeUsersToFile(dbData);

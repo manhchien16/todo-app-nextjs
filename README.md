@@ -15,7 +15,10 @@ yarn dev
 # or
 pnpm dev
 # jwt
+npm install jsonwebtoken
 npm install --save-dev @types/jsonwebtoken@^9.0.7
+# sweetalert2
+npm install sweetalert2
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
