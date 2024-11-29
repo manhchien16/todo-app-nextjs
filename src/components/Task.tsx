@@ -2,7 +2,6 @@ import { ITask } from "@/types/tasks";
 import { FormEventHandler, useState } from "react";
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import Modal from "./Modal";
-import Swal from "sweetalert2";
 
 interface TaskProps {
     task: ITask; // Prop kiểu ITask
@@ -13,8 +12,6 @@ interface TaskProps {
 const Task: React.FC<TaskProps> = ({ task, onRemove, onEdit }) => {
     const [openModalEdit, setOpenModalEdit] = useState<boolean>(false);
     const [taskToEdit, setTaskToEdit] = useState<string>(task.text);
-
-    console.log(taskToEdit);
 
 
     // Hàm xử lý khi chỉnh sửa task

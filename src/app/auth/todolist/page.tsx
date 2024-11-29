@@ -1,17 +1,23 @@
 'use client';
-import { useGetTasksQuery, useDeleteTaskMutation, useUpdateTaskTextMutation } from "@/store/apiSlice"; // Import hook từ apiSlice
-import { ITask } from "@/types/tasks"; // Import ITask từ types
-import Task from "@/components/Task"; // Import component Task để hiển thị
+import { useGetTasksQuery, useDeleteTaskMutation, useUpdateTaskTextMutation, useGetTaskByNameQuery, useLazyGetTaskByNameQuery } from "@/store/service/ApiTaskSlice";
+import { ITask } from "@/types/tasks";
+import Task from "@/components/Task";
 import { useEffect, useState } from "react";
-import AddTack from "@/components/AddTask"; // Import AddTask component
+import AddTack from "@/components/AddTask";
 import Swal from "sweetalert2";
+import SearchBar from "@/components/SearchBar";
+import { useRouter } from "next/navigation";
 
 const TodoLish = () => {
-    const { data: tasks = [], isLoading, isError, error, refetch } = useGetTasksQuery(undefined);
-    const [deleteTask, { isLoading: isDeleting, isSuccess: isDeleteSuccess, isError: isDeleteError }] = useDeleteTaskMutation(); // Hook để xóa task
-    const [updateTaskText, { isLoading: isUpdating, isSuccess: isUpdateSuccess, isError: isUpdateError }] = useUpdateTaskTextMutation(); // Hook để update task
+    const [taskByApi, setTaskByApi] = useState<any>();
+    const [searchText, setSearchText] = useState<string>('');
+    const { data: taskss = [], isLoading: isLoadingTasks, error: errorTasks } = useGetTasksQuery(undefined);
+    const [searchTasks, { data: tasks = [], isLoading: isLoadingSearchTasks, isError, error: errorSearchTasks }] = useLazyGetTaskByNameQuery();
+    const [deleteTask, { isLoading: isDeleting, isSuccess: isDeleteSuccess, isError: isDeleteError }] = useDeleteTaskMutation();
+    const [updateTaskText, { isLoading: isUpdating, isSuccess: isUpdateSuccess, isError: isUpdateError }] = useUpdateTaskTextMutation();
 
     const [editingTask, setEditingTask] = useState<ITask | null>(null);
+    const route = useRouter();
 
     const handleRemoveTask = async (id: string) => {
         const result = await Swal.fire({
@@ -55,26 +61,38 @@ const TodoLish = () => {
         }
     };
 
+    console.log(searchText);
+    console.log(tasks);
 
+    const handleSearchTask = async (text: string) => {
+        setSearchText(text)
+        searchTasks({ text: searchText });
+    }
 
-    // useEffect theo dõi sự thay đổi khi xóa task thành công
     useEffect(() => {
+        searchTasks({ text: searchText });
         if (isDeleteSuccess || isUpdateSuccess) {
             console.log("Task successfully");
-            refetch();
+            searchTasks;
         } else {
             console.error("Failed to api");
         }
-    }, [isDeleteSuccess, isUpdateSuccess, refetch]);
+    }, [isDeleteSuccess, isUpdateSuccess]);
 
-    if (isLoading) return <div>Loading tasks...</div>;
-    if (isError) return <div>Error loading tasks</div>;
+    // if (isLoadingTasks) return <div>Loading tasks...</div>;
+    // if (isError) return <div>Error loading tasks</div>;
+
+    // Kiểm tra xem lỗi có phải là lỗi có thể xử lý
+
+
+
 
     return (
         <>
             <div className="text-center my-5 flex flex-col gap-4">
                 <h1 className="text-2xl font-bold">TODO LISH APP</h1>
-                <AddTack refetch={refetch} />
+                {/* <AddTack refetch={searchTasks} /> */}
+                <SearchBar onSearch={(text: string) => searchTasks({ text })} />
             </div>
             <div className="overflow-x-auto">
                 <table className="table w-full">
@@ -86,7 +104,7 @@ const TodoLish = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {tasks.length > 0 ? (
+                        {Array.isArray(tasks) && tasks.length > 0 ? (
                             tasks.map((task: ITask) => (
                                 <Task
                                     key={task.id}
@@ -97,7 +115,9 @@ const TodoLish = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={3}>No tasks available</td>
+                                <td colSpan={3} className="text-center">
+                                    No tasks available
+                                </td>
                             </tr>
                         )}
                     </tbody>

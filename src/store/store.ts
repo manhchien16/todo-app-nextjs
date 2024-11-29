@@ -1,14 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 import taskReducer from './slices/taskSlice';
-import { apiSlice } from "./apiSlice";
+import { ApiTaskSlice } from './service/ApiTaskSlice';
+import redirectMiddleware from './middleware/redirectMiddleware';
 
 export const store = configureStore({
     reducer: {
         tasks: taskReducer,
-        [apiSlice.reducerPath]: apiSlice.reducer, // Thêm apiSlice reducer
+        [ApiTaskSlice.reducerPath]: ApiTaskSlice.reducer,
     },
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(apiSlice.middleware), // Thêm middleware của RTK Query
+        getDefaultMiddleware().concat(ApiTaskSlice.middleware, redirectMiddleware), // Thêm middleware của RTK Query và middleware tùy chỉnh
 });
 
 export type RootState = ReturnType<typeof store.getState>;

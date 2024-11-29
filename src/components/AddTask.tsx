@@ -3,11 +3,11 @@
 import { AiOutlinePlus } from 'react-icons/ai';
 import Modal from './Modal';
 import { FormEventHandler, useState } from 'react';
-import { useAddTaskMutation } from '@/store/apiSlice';
+import { useAddTaskMutation } from '@/store/service/ApiTaskSlice';
 import { ITask } from '@/types/tasks';
 
 interface AddTackProps {
-    refetch: () => void; // Nhận refetch từ component cha
+    refetch: () => void;
 }
 
 const AddTack = ({ refetch }: AddTackProps) => {
@@ -19,16 +19,11 @@ const AddTack = ({ refetch }: AddTackProps) => {
         e.preventDefault();
         if (taskValues.trim()) {
             try {
-                // Tạo task theo đúng cấu trúc ITask
                 const newTask: ITask = {
                     id: Date.now().toString(),
                     text: taskValues,
                 };
-
-                // Gửi task lên API
                 const result = await addTask(newTask).unwrap();
-
-                // Gọi lại refetch để làm mới danh sách task
                 refetch();
 
                 setTaskValues(''); // Reset input

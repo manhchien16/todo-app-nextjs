@@ -19,7 +19,11 @@ export default function RootLayout({
   return (
     <Provider store={store}>
       <html lang="en">
-        <body className={inter.className}>{children}</body>
+        <body className={inter.className}>
+          <main className="max-w-4xl mx-auto mt-4">
+            {children}
+          </main>
+        </body>
       </html>
     </Provider>
   )
