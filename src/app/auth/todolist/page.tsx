@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 const TodoLish = () => {
     const [taskByApi, setTaskByApi] = useState<any>();
     const [searchText, setSearchText] = useState<string>('');
-    const { data: taskss = [], isLoading: isLoadingTasks, error: errorTasks } = useGetTasksQuery(undefined);
+    // const { data: taskss = [], isLoading: isLoadingTasks, error: errorTasks } = useGetTasksQuery(undefined);
     const [searchTasks, { data: tasks = [], isLoading: isLoadingSearchTasks, isError, error: errorSearchTasks }] = useLazyGetTaskByNameQuery();
     const [deleteTask, { isLoading: isDeleting, isSuccess: isDeleteSuccess, isError: isDeleteError }] = useDeleteTaskMutation();
     const [updateTaskText, { isLoading: isUpdating, isSuccess: isUpdateSuccess, isError: isUpdateError }] = useUpdateTaskTextMutation();
@@ -79,19 +79,14 @@ const TodoLish = () => {
         }
     }, [isDeleteSuccess, isUpdateSuccess]);
 
-    // if (isLoadingTasks) return <div>Loading tasks...</div>;
-    // if (isError) return <div>Error loading tasks</div>;
-
-    // Kiểm tra xem lỗi có phải là lỗi có thể xử lý
-
-
-
+    if (isLoadingSearchTasks) return <div>Loading tasks...</div>;
+    if (isError) return <div>Error loading tasks</div>;
 
     return (
         <>
             <div className="text-center my-5 flex flex-col gap-4">
                 <h1 className="text-2xl font-bold">TODO LISH APP</h1>
-                {/* <AddTack refetch={searchTasks} /> */}
+                {/* <AddTack /> */}
                 <SearchBar onSearch={(text: string) => searchTasks({ text })} />
             </div>
             <div className="overflow-x-auto">

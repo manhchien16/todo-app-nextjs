@@ -7,10 +7,10 @@ import { useAddTaskMutation } from '@/store/service/ApiTaskSlice';
 import { ITask } from '@/types/tasks';
 
 interface AddTackProps {
-    refetch: () => void;
+    searchtasks: ({ }) => void;
 }
 
-const AddTack = ({ refetch }: AddTackProps) => {
+const AddTack = ({ searchtasks }: AddTackProps) => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [taskValues, setTaskValues] = useState<string>('');
     const [addTask, { isLoading, isError, isSuccess }] = useAddTaskMutation();
@@ -24,7 +24,7 @@ const AddTack = ({ refetch }: AddTackProps) => {
                     text: taskValues,
                 };
                 const result = await addTask(newTask).unwrap();
-                refetch();
+                searchtasks({});
 
                 setTaskValues(''); // Reset input
                 setModalOpen(false); // Đóng modal
